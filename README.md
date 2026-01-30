@@ -238,7 +238,7 @@ CREATE INDEX idx_transactions_created_at ON transactions(created_at DESC);
 
 ### Base URL
 ```
-Production: https://velox-backend.onrender.com/api
+Production: https://velox-app.onrender.com/api
 ```
 
 ### Authentication Endpoints
