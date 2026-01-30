@@ -43,7 +43,6 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
             return date.toLocaleDateString('en-IN', {
                 day: 'numeric',
                 month: 'short',
-                year: 'numeric'
             });
         }
     };
@@ -51,12 +50,10 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
     const formatFullDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-IN', {
-            weekday: 'long',
+            weekday: 'short',
             day: 'numeric',
-            month: 'long',
+            month: 'short',
             year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
         });
     };
 
@@ -91,25 +88,32 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
                 {/* Main Row */}
                 <View style={styles.mainRow}>
                     <View style={[styles.iconContainer, { backgroundColor: `${category.color}12` }]}>
-                        <Ionicons name={category.icon} size={22} color={category.color} />
+                        <Ionicons name={category.icon} size={SIZES.fontXl} color={category.color} />
                     </View>
 
                     <View style={styles.details}>
-                        <Text style={styles.title} numberOfLines={1}>{transaction.title}</Text>
+                        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                            {transaction.title}
+                        </Text>
                         <View style={styles.metaRow}>
-                            <Text style={styles.category}>{category.label}</Text>
-                            <View style={styles.dot} />
-                            <Text style={styles.date}>{formatDate(transaction.createdAt)}</Text>
+                            <Text style={styles.category} numberOfLines={1}>{category.label}</Text>
+                            <Text style={styles.dot}>•</Text>
+                            <Text style={styles.date} numberOfLines={1}>{formatDate(transaction.createdAt)}</Text>
                         </View>
                     </View>
 
                     <View style={styles.amountContainer}>
-                        <Text style={[styles.amount, isExpense ? styles.expense : styles.income]}>
+                        <Text
+                            style={[styles.amount, isExpense ? styles.expense : styles.income]}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.7}
+                        >
                             {isExpense ? '-' : '+'}{formatCurrency(transaction.convertedAmount)}
                         </Text>
                         <Ionicons
                             name={isExpanded ? "chevron-up" : "chevron-down"}
-                            size={16}
+                            size={SIZES.fontMd}
                             color={COLORS.textMuted}
                             style={styles.chevron}
                         />
@@ -128,15 +132,15 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
                                 <View style={styles.detailIcon}>
                                     <Ionicons
                                         name={paymentType?.icon || "wallet-outline"}
-                                        size={16}
+                                        size={SIZES.fontMd}
                                         color={paymentType?.color || COLORS.textMuted}
                                     />
                                 </View>
-                                <View>
-                                    <Text style={styles.detailLabel}>
+                                <View style={styles.detailTextContainer}>
+                                    <Text style={styles.detailLabel} numberOfLines={1}>
                                         {isExpense ? 'Paid via' : 'Received via'}
                                     </Text>
-                                    <Text style={styles.detailValue}>
+                                    <Text style={styles.detailValue} numberOfLines={1}>
                                         {paymentType?.label || 'Not specified'}
                                     </Text>
                                 </View>
@@ -145,43 +149,28 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
                             {/* Date & Time */}
                             <View style={styles.detailItem}>
                                 <View style={styles.detailIcon}>
-                                    <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
+                                    <Ionicons name="calendar-outline" size={SIZES.fontMd} color={COLORS.primary} />
                                 </View>
-                                <View>
-                                    <Text style={styles.detailLabel}>Date & Time</Text>
-                                    <Text style={styles.detailValue}>
+                                <View style={styles.detailTextContainer}>
+                                    <Text style={styles.detailLabel} numberOfLines={1}>Date</Text>
+                                    <Text style={styles.detailValue} numberOfLines={1}>
                                         {formatFullDate(transaction.createdAt)}
                                     </Text>
                                 </View>
                             </View>
-
-                            {/* Original Amount (if converted) */}
-                            {transaction.originalCurrency && transaction.originalCurrency !== homeCurrency.code && (
-                                <View style={styles.detailItem}>
-                                    <View style={styles.detailIcon}>
-                                        <Ionicons name="swap-horizontal-outline" size={16} color={COLORS.warning} />
-                                    </View>
-                                    <View>
-                                        <Text style={styles.detailLabel}>Original Amount</Text>
-                                        <Text style={styles.detailValue}>
-                                            {transaction.originalCurrency} {transaction.amount.toFixed(2)}
-                                        </Text>
-                                    </View>
-                                </View>
-                            )}
 
                             {/* Transaction Type */}
                             <View style={styles.detailItem}>
                                 <View style={styles.detailIcon}>
                                     <Ionicons
                                         name={isExpense ? "arrow-up-circle-outline" : "arrow-down-circle-outline"}
-                                        size={16}
+                                        size={SIZES.fontMd}
                                         color={isExpense ? COLORS.danger : COLORS.success}
                                     />
                                 </View>
-                                <View>
-                                    <Text style={styles.detailLabel}>Type</Text>
-                                    <Text style={[styles.detailValue, { color: isExpense ? COLORS.danger : COLORS.success }]}>
+                                <View style={styles.detailTextContainer}>
+                                    <Text style={styles.detailLabel} numberOfLines={1}>Type</Text>
+                                    <Text style={[styles.detailValue, { color: isExpense ? COLORS.danger : COLORS.success }]} numberOfLines={1}>
                                         {isExpense ? 'Expense' : 'Income'}
                                     </Text>
                                 </View>
@@ -194,7 +183,7 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
                                 style={styles.editButton}
                                 onPress={() => onEdit?.(transaction)}
                             >
-                                <Ionicons name="create-outline" size={18} color={COLORS.primary} />
+                                <Ionicons name="create-outline" size={SIZES.fontLg} color={COLORS.primary} />
                                 <Text style={styles.editButtonText}>Edit</Text>
                             </Pressable>
 
@@ -202,7 +191,7 @@ export default function TransactionItem({ transaction, onDelete, onEdit }) {
                                 style={styles.deleteButton}
                                 onPress={() => onDelete?.(transaction.id)}
                             >
-                                <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
+                                <Ionicons name="trash-outline" size={SIZES.fontLg} color={COLORS.danger} />
                                 <Text style={styles.deleteButtonText}>Delete</Text>
                             </Pressable>
                         </View>
@@ -242,38 +231,44 @@ const styles = StyleSheet.create({
         borderRadius: SIZES.radiusMd,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: SIZES.md,
+        marginRight: SIZES.sm,
+        flexShrink: 0,
     },
     details: {
         flex: 1,
+        marginRight: SIZES.sm,
+        minWidth: 0, // Important: allows flex child to shrink below content size
     },
     title: {
         fontSize: SIZES.fontMd,
         fontWeight: '600',
         color: COLORS.textPrimary,
-        marginBottom: 3,
+        marginBottom: 2,
     },
     metaRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        flexWrap: 'nowrap',
     },
     category: {
         fontSize: SIZES.fontSm,
         color: COLORS.textSecondary,
+        flexShrink: 1,
     },
     dot: {
-        width: 3,
-        height: 3,
-        borderRadius: SIZES.radiusFull,
-        backgroundColor: COLORS.textMuted,
-        marginHorizontal: 6,
+        fontSize: SIZES.fontSm,
+        color: COLORS.textMuted,
+        marginHorizontal: 4,
     },
     date: {
         fontSize: SIZES.fontSm,
         color: COLORS.textMuted,
+        flexShrink: 0,
     },
     amountContainer: {
         alignItems: 'flex-end',
+        flexShrink: 0,
+        maxWidth: '35%',
     },
     amount: {
         fontSize: SIZES.fontLg,
@@ -297,12 +292,12 @@ const styles = StyleSheet.create({
         marginBottom: SIZES.md,
     },
     detailsGrid: {
-        gap: SIZES.md,
+        marginBottom: SIZES.sm,
     },
     detailItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SIZES.sm,
+        marginBottom: SIZES.sm,
     },
     detailIcon: {
         width: 32,
@@ -311,6 +306,12 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.backgroundSecondary,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: SIZES.sm,
+        flexShrink: 0,
+    },
+    detailTextContainer: {
+        flex: 1,
+        minWidth: 0,
     },
     detailLabel: {
         fontSize: SIZES.fontXs,
@@ -326,33 +327,32 @@ const styles = StyleSheet.create({
     },
     actionButtons: {
         flexDirection: 'row',
-        gap: SIZES.sm,
-        marginTop: SIZES.lg,
+        marginTop: SIZES.sm,
     },
     editButton: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
-        paddingVertical: SIZES.sm + 2,
+        paddingVertical: SIZES.sm,
         borderRadius: SIZES.radiusMd,
         backgroundColor: `${COLORS.primary}10`,
         borderWidth: 1,
         borderColor: `${COLORS.primary}20`,
+        marginRight: SIZES.sm,
     },
     editButtonText: {
         fontSize: SIZES.fontMd,
         fontWeight: '600',
         color: COLORS.primary,
+        marginLeft: 6,
     },
     deleteButton: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
-        paddingVertical: SIZES.sm + 2,
+        paddingVertical: SIZES.sm,
         borderRadius: SIZES.radiusMd,
         backgroundColor: `${COLORS.danger}08`,
         borderWidth: 1,
@@ -362,5 +362,6 @@ const styles = StyleSheet.create({
         fontSize: SIZES.fontMd,
         fontWeight: '600',
         color: COLORS.danger,
+        marginLeft: 6,
     },
 });

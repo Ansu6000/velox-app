@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../constants/colors';
@@ -10,6 +10,22 @@ export default function BalanceCard() {
     const { balance, income, expense } = getSummary();
 
     const formatCurrency = (amount) => {
+        const absAmount = Math.abs(amount);
+        // Shorten large amounts
+        if (absAmount >= 10000000) {
+            return `${homeCurrency.symbol}${(absAmount / 10000000).toFixed(1)}Cr`;
+        } else if (absAmount >= 100000) {
+            return `${homeCurrency.symbol}${(absAmount / 100000).toFixed(1)}L`;
+        } else if (absAmount >= 1000) {
+            return `${homeCurrency.symbol}${(absAmount / 1000).toFixed(1)}K`;
+        }
+        return `${homeCurrency.symbol}${absAmount.toLocaleString('en-IN', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        })}`;
+    };
+
+    const formatFullCurrency = (amount) => {
         return `${homeCurrency.symbol}${Math.abs(amount).toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -28,10 +44,15 @@ export default function BalanceCard() {
             <View style={styles.decorCircle2} />
 
             <View style={styles.header}>
-                <View>
+                <View style={styles.balanceContainer}>
                     <Text style={styles.label}>Total Balance</Text>
-                    <Text style={styles.balance}>
-                        {balance >= 0 ? '' : '-'}{formatCurrency(balance)}
+                    <Text
+                        style={styles.balance}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.6}
+                    >
+                        {balance >= 0 ? '' : '-'}{formatFullCurrency(balance)}
                     </Text>
                 </View>
                 <View style={styles.currencyBadge}>
@@ -43,11 +64,18 @@ export default function BalanceCard() {
             <View style={styles.row}>
                 <View style={styles.statContainer}>
                     <View style={[styles.iconContainer, styles.incomeIcon]}>
-                        <Ionicons name="arrow-down" size={16} color="#10B981" />
+                        <Ionicons name="arrow-down" size={SIZES.fontMd} color="#10B981" />
                     </View>
-                    <View>
-                        <Text style={styles.statLabel}>Income</Text>
-                        <Text style={styles.statValue}>{formatCurrency(income)}</Text>
+                    <View style={styles.statTextContainer}>
+                        <Text style={styles.statLabel} numberOfLines={1}>Income</Text>
+                        <Text
+                            style={styles.statValue}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.7}
+                        >
+                            {formatCurrency(income)}
+                        </Text>
                     </View>
                 </View>
 
@@ -55,11 +83,18 @@ export default function BalanceCard() {
 
                 <View style={styles.statContainer}>
                     <View style={[styles.iconContainer, styles.expenseIcon]}>
-                        <Ionicons name="arrow-up" size={16} color="#EF4444" />
+                        <Ionicons name="arrow-up" size={SIZES.fontMd} color="#EF4444" />
                     </View>
-                    <View>
-                        <Text style={styles.statLabel}>Expenses</Text>
-                        <Text style={styles.statValue}>{formatCurrency(expense)}</Text>
+                    <View style={styles.statTextContainer}>
+                        <Text style={styles.statLabel} numberOfLines={1}>Expenses</Text>
+                        <Text
+                            style={styles.statValue}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.7}
+                        >
+                            {formatCurrency(expense)}
+                        </Text>
                     </View>
                 </View>
             </View>
@@ -67,8 +102,8 @@ export default function BalanceCard() {
             {travelMode && lastUpdated && (
                 <View style={styles.travelBadge}>
                     <Ionicons name="airplane" size={12} color="rgba(255,255,255,0.8)" />
-                    <Text style={styles.lastUpdated}>
-                        Travel Mode • Rates: {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <Text style={styles.lastUpdated} numberOfLines={1}>
+                        Travel Mode • Updated {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                 </View>
             )}
@@ -79,7 +114,7 @@ export default function BalanceCard() {
 const styles = StyleSheet.create({
     container: {
         borderRadius: SIZES.radiusXl,
-        padding: SIZES.lg,
+        padding: SIZES.md,
         marginHorizontal: SIZES.md,
         marginTop: SIZES.sm,
         shadowColor: '#2563EB',
@@ -91,27 +126,31 @@ const styles = StyleSheet.create({
     },
     decorCircle1: {
         position: 'absolute',
-        width: 150,
-        height: 150,
-        borderRadius: 75,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         backgroundColor: 'rgba(255, 255, 255, 0.08)',
-        top: -50,
-        right: -30,
+        top: -40,
+        right: -20,
     },
     decorCircle2: {
         position: 'absolute',
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        bottom: -20,
-        left: -20,
+        bottom: -15,
+        left: -15,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: SIZES.md,
+    },
+    balanceContainer: {
+        flex: 1,
+        marginRight: SIZES.sm,
     },
     label: {
         color: 'rgba(255, 255, 255, 0.75)',
@@ -132,10 +171,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: SIZES.sm,
         paddingVertical: 6,
         borderRadius: SIZES.radiusFull,
-        gap: 4,
     },
     currencyFlag: {
         fontSize: SIZES.fontMd,
+        marginRight: 4,
     },
     currencyCode: {
         color: COLORS.textLight,
@@ -153,14 +192,15 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SIZES.sm,
     },
     iconContainer: {
-        width: 32,
-        height: 32,
+        width: 28,
+        height: 28,
         borderRadius: SIZES.radiusMd,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: SIZES.sm,
+        flexShrink: 0,
     },
     incomeIcon: {
         backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -168,10 +208,14 @@ const styles = StyleSheet.create({
     expenseIcon: {
         backgroundColor: 'rgba(239, 68, 68, 0.2)',
     },
+    statTextContainer: {
+        flex: 1,
+        minWidth: 0,
+    },
     statLabel: {
         color: 'rgba(255, 255, 255, 0.65)',
         fontSize: SIZES.fontXs,
-        marginBottom: 2,
+        marginBottom: 1,
     },
     statValue: {
         color: COLORS.textLight,
@@ -180,15 +224,14 @@ const styles = StyleSheet.create({
     },
     divider: {
         width: 1,
-        height: 36,
+        height: 32,
         backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        marginHorizontal: SIZES.md,
+        marginHorizontal: SIZES.sm,
     },
     travelBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
         marginTop: SIZES.md,
         paddingVertical: 6,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -197,5 +240,6 @@ const styles = StyleSheet.create({
     lastUpdated: {
         color: 'rgba(255, 255, 255, 0.7)',
         fontSize: SIZES.fontXs,
+        marginLeft: 6,
     },
 });

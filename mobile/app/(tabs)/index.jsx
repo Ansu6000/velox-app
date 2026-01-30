@@ -179,22 +179,32 @@ export default function HomeScreen() {
                     <View style={styles.quickStats}>
                         <View style={styles.statCard}>
                             <View style={[styles.statIcon, { backgroundColor: `${COLORS.danger}12` }]}>
-                                <Ionicons name="arrow-up" size={16} color={COLORS.danger} />
+                                <Ionicons name="arrow-up" size={SIZES.fontMd} color={COLORS.danger} />
                             </View>
-                            <View>
-                                <Text style={styles.statLabel}>Today's Spending</Text>
-                                <Text style={[styles.statValue, { color: COLORS.danger }]}>
+                            <View style={styles.statTextContainer}>
+                                <Text style={styles.statLabel} numberOfLines={1}>Today's Spent</Text>
+                                <Text
+                                    style={[styles.statValue, { color: COLORS.danger }]}
+                                    numberOfLines={1}
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.7}
+                                >
                                     {homeCurrency.symbol}{todayExpenses.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                 </Text>
                             </View>
                         </View>
                         <View style={styles.statCard}>
                             <View style={[styles.statIcon, { backgroundColor: `${COLORS.success}12` }]}>
-                                <Ionicons name="arrow-down" size={16} color={COLORS.success} />
+                                <Ionicons name="arrow-down" size={SIZES.fontMd} color={COLORS.success} />
                             </View>
-                            <View>
-                                <Text style={styles.statLabel}>Today's Income</Text>
-                                <Text style={[styles.statValue, { color: COLORS.success }]}>
+                            <View style={styles.statTextContainer}>
+                                <Text style={styles.statLabel} numberOfLines={1}>Today's Income</Text>
+                                <Text
+                                    style={[styles.statValue, { color: COLORS.success }]}
+                                    numberOfLines={1}
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.7}
+                                >
                                     {homeCurrency.symbol}{todayIncome.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                 </Text>
                             </View>
@@ -505,7 +515,6 @@ const styles = StyleSheet.create({
     quickStats: {
         flexDirection: 'row',
         paddingHorizontal: SIZES.md,
-        gap: SIZES.sm,
         marginTop: SIZES.md,
     },
     statCard: {
@@ -513,26 +522,32 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: COLORS.white,
-        padding: SIZES.md,
+        padding: SIZES.sm,
         borderRadius: SIZES.radiusLg,
-        gap: SIZES.sm,
         shadowColor: COLORS.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 4,
         elevation: 1,
+        marginRight: SIZES.sm,
     },
     statIcon: {
-        width: 36,
-        height: 36,
+        width: 32,
+        height: 32,
         borderRadius: SIZES.radiusMd,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: SIZES.sm,
+        flexShrink: 0,
+    },
+    statTextContainer: {
+        flex: 1,
+        minWidth: 0,
     },
     statLabel: {
         fontSize: SIZES.fontXs,
         color: COLORS.textMuted,
-        marginBottom: 2,
+        marginBottom: 1,
     },
     statValue: {
         fontSize: SIZES.fontMd,

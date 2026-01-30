@@ -164,8 +164,8 @@ export default function AnalyticsScreen() {
                     >
                         <Ionicons name="settings-outline" size={24} color={COLORS.textPrimary} />
                     </Pressable>
-                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: SIZES.sm, gap: 8 }}>
-                        <Image source={require('../../assets/images/logo.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: SIZES.sm }}>
+                        <Image source={require('../../assets/images/logo.png')} style={{ width: 24, height: 24, marginRight: 8 }} resizeMode="contain" />
                         <Text style={styles.headerTitle}>Analytics</Text>
                     </View>
                     <Pressable
@@ -752,14 +752,15 @@ const styles = StyleSheet.create({
     paymentLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SIZES.md,
+        flex: 1,
     },
     paymentIcon: {
-        width: 44,
-        height: 44,
+        width: 40,
+        height: 40,
         borderRadius: SIZES.radiusMd,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: SIZES.sm,
     },
     paymentLabel: {
         fontSize: SIZES.fontMd,

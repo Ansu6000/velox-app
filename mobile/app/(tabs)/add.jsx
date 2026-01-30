@@ -527,7 +527,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: SIZES.md,
         borderRadius: SIZES.radiusMd,
-        gap: SIZES.sm,
+    },
+    toggleIcon: {
+        marginRight: SIZES.xs,
     },
     toggleActive: {
         backgroundColor: COLORS.danger,
@@ -589,7 +591,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: SIZES.sm,
         paddingVertical: SIZES.xs,
         borderRadius: SIZES.radiusFull,
-        gap: SIZES.xs,
     },
     currencyFlag: {
         fontSize: SIZES.fontLg,
