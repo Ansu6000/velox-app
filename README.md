@@ -29,7 +29,7 @@
 ## 📱 Download
 
 <p align="center">
-  <a href="YOUR_GDRIVE_LINK_HERE">
+  <a href="https://drive.google.com/file/d/1e-7cTsElIwfmp22d7yVJS1BJ1P0pfEBx/view?usp=sharing">
     <img src="https://img.shields.io/badge/Download_APK-Google_Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white" alt="Download APK">
   </a>
 </p>
