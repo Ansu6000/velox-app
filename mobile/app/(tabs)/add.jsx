@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     View,
     Text,
@@ -18,7 +18,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { COLORS, SIZES } from '../../src/constants/colors';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../../src/constants/categories';
+import {
+    EXPENSE_CATEGORIES,
+    INCOME_CATEGORIES,
+    EXPENSE_PAYMENT_TYPES,
+    INCOME_PAYMENT_TYPES
+} from '../../src/constants/categories';
 import { useApp } from '../../src/context/AppContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -31,10 +36,12 @@ export default function AddTransactionScreen() {
     const [title, setTitle] = useState('');
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState(null);
+    const [paymentType, setPaymentType] = useState(null);
     const [date, setDate] = useState(new Date()); // Default to today
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCategoryPicker, setShowCategoryPicker] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showPaymentTypePicker, setShowPaymentTypePicker] = useState(false);
 
     // Generate last 30 days for date picker
     const recentDates = Array.from({ length: 30 }, (_, i) => {
@@ -55,6 +62,18 @@ export default function AddTransactionScreen() {
 
     const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
+    // Filter payment types based on type and currency
+    const availablePaymentTypes = useMemo(() => {
+        const baseTypes = type === 'expense' ? EXPENSE_PAYMENT_TYPES : INCOME_PAYMENT_TYPES;
+        // Filter out UPI if home currency is not INR
+        return baseTypes.filter(pt => {
+            if (pt.indiaOnly && homeCurrency.code !== 'INR') {
+                return false;
+            }
+            return true;
+        });
+    }, [type, homeCurrency.code]);
+
     const convertedAmount = amount
         ? (parseFloat(amount) * (exchangeRates[homeCurrency.code] || 1)).toFixed(2)
         : '0.00';
@@ -72,6 +91,10 @@ export default function AddTransactionScreen() {
             Alert.alert('Error', 'Please select a category');
             return;
         }
+        if (!paymentType) {
+            Alert.alert('Error', `Please select ${type === 'expense' ? 'a payment type' : 'how the amount was credited'}`);
+            return;
+        }
 
         try {
             setIsSubmitting(true);
@@ -79,6 +102,7 @@ export default function AddTransactionScreen() {
                 title: title.trim(),
                 amount: parseFloat(amount),
                 category: category.id,
+                paymentType: paymentType.id,
                 type,
                 date: date,
             });
@@ -86,6 +110,7 @@ export default function AddTransactionScreen() {
             setTitle('');
             setAmount('');
             setCategory(null);
+            setPaymentType(null);
             setDate(new Date());
 
             Alert.alert('Success', 'Transaction added successfully', [
@@ -96,6 +121,13 @@ export default function AddTransactionScreen() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Reset payment type when switching transaction type
+    const handleTypeChange = (newType) => {
+        setType(newType);
+        setCategory(null);
+        setPaymentType(null);
     };
 
     return (
@@ -120,10 +152,7 @@ export default function AddTransactionScreen() {
                         <View style={styles.typeToggle}>
                             <Pressable
                                 style={[styles.toggleButton, type === 'expense' && styles.toggleActive]}
-                                onPress={() => {
-                                    setType('expense');
-                                    setCategory(null);
-                                }}
+                                onPress={() => handleTypeChange('expense')}
                             >
                                 <Ionicons
                                     name="arrow-up-circle"
@@ -136,10 +165,7 @@ export default function AddTransactionScreen() {
                             </Pressable>
                             <Pressable
                                 style={[styles.toggleButton, styles.toggleIncome, type === 'income' && styles.toggleIncomeActive]}
-                                onPress={() => {
-                                    setType('income');
-                                    setCategory(null);
-                                }}
+                                onPress={() => handleTypeChange('income')}
                             >
                                 <Ionicons
                                     name="arrow-down-circle"
@@ -239,6 +265,36 @@ export default function AddTransactionScreen() {
                                         <>
                                             <Ionicons name="list-outline" size={20} color={COLORS.textMuted} />
                                             <Text style={styles.dropdownPlaceholder}>Select a category</Text>
+                                        </>
+                                    )}
+                                </View>
+                                <Ionicons name="chevron-down" size={20} color={COLORS.textMuted} />
+                            </Pressable>
+                        </View>
+
+                        {/* Payment Type Selection (NEW) */}
+                        <View style={styles.inputSection}>
+                            <Text style={styles.label}>
+                                {type === 'expense' ? 'Payment Type' : 'Credited Via'}
+                            </Text>
+                            <Pressable
+                                style={styles.dropdownButton}
+                                onPress={() => setShowPaymentTypePicker(true)}
+                            >
+                                <View style={styles.dropdownLeft}>
+                                    {paymentType ? (
+                                        <>
+                                            <View style={[styles.miniIcon, { backgroundColor: `${paymentType.color}20` }]}>
+                                                <Ionicons name={paymentType.icon} size={20} color={paymentType.color} />
+                                            </View>
+                                            <Text style={styles.dropdownValue}>{paymentType.label}</Text>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Ionicons name="wallet-outline" size={20} color={COLORS.textMuted} />
+                                            <Text style={styles.dropdownPlaceholder}>
+                                                {type === 'expense' ? 'Select payment type' : 'Select credit source'}
+                                            </Text>
                                         </>
                                     )}
                                 </View>
@@ -363,6 +419,57 @@ export default function AddTransactionScreen() {
                                     </Text>
                                     {item.toDateString() === date.toDateString() && (
                                         <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+                                    )}
+                                </Pressable>
+                            )}
+                            showsVerticalScrollIndicator={true}
+                            contentContainerStyle={styles.modalList}
+                        />
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Payment Type Picker Modal (NEW) */}
+            <Modal
+                visible={showPaymentTypePicker}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowPaymentTypePicker(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <Pressable style={styles.modalBackdrop} onPress={() => setShowPaymentTypePicker(false)} />
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>
+                                {type === 'expense' ? 'Select Payment Type' : 'Select Credit Source'}
+                            </Text>
+                            <Pressable onPress={() => setShowPaymentTypePicker(false)} style={styles.modalClose}>
+                                <Ionicons name="close" size={24} color={COLORS.textPrimary} />
+                            </Pressable>
+                        </View>
+                        <FlatList
+                            data={availablePaymentTypes}
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item: pt }) => (
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        styles.categoryItem,
+                                        pressed && styles.pressed,
+                                        paymentType?.id === pt.id && styles.selectedCategoryItem
+                                    ]}
+                                    onPress={() => {
+                                        setPaymentType(pt);
+                                        setShowPaymentTypePicker(false);
+                                    }}
+                                >
+                                    <View style={[styles.categoryIcon, { backgroundColor: `${pt.color}15` }]}>
+                                        <Ionicons name={pt.icon} size={24} color={pt.color} />
+                                    </View>
+                                    <Text style={[styles.categoryLabel, paymentType?.id === pt.id && { color: pt.color, fontWeight: '700' }]}>
+                                        {pt.label}
+                                    </Text>
+                                    {paymentType?.id === pt.id && (
+                                        <Ionicons name="checkmark-circle" size={24} color={pt.color} />
                                     )}
                                 </Pressable>
                             )}

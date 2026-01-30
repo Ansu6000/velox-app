@@ -28,13 +28,21 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         setIsLoading(true);
+
+        // Create abort controller for request timeout (Render cold starts can take 15+ seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         try {
             console.log(`Attempting login at: ${API_BASE_URL}/auth/login`);
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password }),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
@@ -53,7 +61,11 @@ export function AuthProvider({ children }) {
             setUser(userData);
             return userData;
         } catch (error) {
+            clearTimeout(timeoutId);
             console.error("Login catch error:", error);
+            if (error.name === 'AbortError') {
+                throw new Error('Connection timed out. The server may be starting up, please try again in a moment.');
+            }
             throw error;
         } finally {
             setIsLoading(false);
@@ -62,14 +74,22 @@ export function AuthProvider({ children }) {
 
     const signup = async (email, password, name) => {
         setIsLoading(true);
+
+        // Create abort controller for request timeout (Render cold starts can take 15+ seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         try {
             const stableId = `user_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
             console.log(`Attempting signup at: ${API_BASE_URL}/auth/signup`);
             const response = await fetch(`${API_BASE_URL}/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: stableId, name, email, password })
+                body: JSON.stringify({ id: stableId, name, email, password }),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
@@ -88,7 +108,11 @@ export function AuthProvider({ children }) {
             setUser(userData);
             return userData;
         } catch (error) {
+            clearTimeout(timeoutId);
             console.error("Signup catch error:", error);
+            if (error.name === 'AbortError') {
+                throw new Error('Connection timed out. The server may be starting up, please try again in a moment.');
+            }
             throw error;
         } finally {
             setIsLoading(false);

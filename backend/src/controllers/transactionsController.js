@@ -55,6 +55,34 @@ export async function deleteTransaction(req, res) {
   }
 }
 
+export async function updateTransaction(req, res) {
+  try {
+    const { id } = req.params;
+    const { title, amount, category, payment_type } = req.body;
+
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ error: 'Invalid transaction ID' });
+    }
+
+    const result = await sql`
+      UPDATE transactions 
+      SET title = ${title}, amount = ${amount}, category = ${category}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    console.log("Transaction updated: ", result[0]);
+    res.json(result[0]);
+  } catch (error) {
+    console.error("Error updating transaction: ", error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 export async function getSunmaryByUserId(req, res) {
   try {
     const { userId } = req.params;

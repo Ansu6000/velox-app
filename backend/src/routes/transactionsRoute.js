@@ -1,14 +1,15 @@
 import express from 'express';
 
-import { createTransaction, deleteTransaction, getTransactionByUserId, getSunmaryByUserId } from '../controllers/transactionsController.js';
+import { createTransaction, deleteTransaction, updateTransaction, getTransactionByUserId, getSunmaryByUserId } from '../controllers/transactionsController.js';
 
 
 const router = express.Router();
 
-router.get("/:userId", getTransactionByUserId); 
+router.get("/:userId", getTransactionByUserId);
 router.post("/", createTransaction);
 
-router.delete("/:id", deleteTransaction);  
+router.put("/:id", updateTransaction);
+router.delete("/:id", deleteTransaction);
 
 router.get("/summary/:userId", getSunmaryByUserId);
 

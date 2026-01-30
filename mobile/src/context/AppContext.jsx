@@ -218,6 +218,7 @@ export function AppProvider({ children }) {
                 title: transaction.title,
                 amount: transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
                 category: transaction.category,
+                payment_type: transaction.paymentType || null,
                 created_at: transaction.date ? new Date(transaction.date).toISOString() : new Date().toISOString(),
             };
 
@@ -237,6 +238,7 @@ export function AppProvider({ children }) {
                 originalCurrency: spendingCurrency.code,
                 convertedAmount: convertedAmount,
                 exchangeRate: exchangeRates[homeCurrency.code] || 1,
+                paymentType: transaction.paymentType || null,
             };
 
             const updatedTransactions = [newTransaction, ...transactions];
@@ -271,6 +273,67 @@ export function AppProvider({ children }) {
         }
     };
 
+    // Update a transaction
+    const updateTransaction = async (updatedTransaction) => {
+        try {
+            const convertedAmount = convertToHomeCurrency(updatedTransaction.amount);
+
+            // Prepare for backend
+            const backendTransaction = {
+                user_id: user?.id || 'anonymous',
+                title: updatedTransaction.title,
+                amount: updatedTransaction.type === 'expense' ? -Math.abs(updatedTransaction.amount) : Math.abs(updatedTransaction.amount),
+                category: updatedTransaction.category,
+                payment_type: updatedTransaction.paymentType || null,
+            };
+
+            // Update on backend
+            await fetch(`${API_BASE_URL}/transactions/${updatedTransaction.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(backendTransaction)
+            });
+
+            // Update locally
+            const newTransaction = {
+                ...updatedTransaction,
+                convertedAmount: convertedAmount,
+            };
+
+            const updatedTransactions = transactions.map(t =>
+                t.id === updatedTransaction.id ? newTransaction : t
+            );
+            setTransactions(updatedTransactions);
+            await AsyncStorage.setItem('transactions', JSON.stringify(updatedTransactions));
+
+            return newTransaction;
+        } catch (error) {
+            console.error('Error updating transaction:', error);
+            throw error;
+        }
+    };
+
+    // Clear all transactions for the current user
+    const clearAllData = async () => {
+        if (!user) return;
+        try {
+            // Delete each transaction from backend
+            const deletePromises = transactions.map(t =>
+                fetch(`${API_BASE_URL}/transactions/${t.id}`, { method: 'DELETE' })
+            );
+            await Promise.all(deletePromises);
+
+            // Clear local storage
+            setTransactions([]);
+            await AsyncStorage.removeItem('transactions');
+            await AsyncStorage.removeItem('savingsGoals');
+            setSavingsGoals({ weekly: 0, monthly: 0 });
+        } catch (error) {
+            console.error('Error clearing all data:', error);
+            throw error;
+        }
+    };
+
     // Calculate summary
     const getSummary = () => {
         const income = transactions
@@ -299,7 +362,9 @@ export function AppProvider({ children }) {
         saveSpendingCurrency,
         convertToHomeCurrency,
         addTransaction,
+        updateTransaction,
         deleteTransaction,
+        clearAllData,
         getSummary,
         fetchExchangeRates,
         travelMode,

@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import { COLORS, SIZES } from '../../src/constants/colors';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../../src/constants/categories';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, EXPENSE_PAYMENT_TYPES, INCOME_PAYMENT_TYPES } from '../../src/constants/categories';
 import { useApp } from '../../src/context/AppContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -31,6 +31,7 @@ export default function AnalyticsScreen() {
     });
 
     const categories = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
+    const paymentTypes = [...EXPENSE_PAYMENT_TYPES, ...INCOME_PAYMENT_TYPES];
 
     // Filter data based on time range
     const filteredTransactions = useMemo(() => {
@@ -100,6 +101,46 @@ export default function AnalyticsScreen() {
     const totalIncome = filteredTransactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + (t.convertedAmount || t.amount), 0);
+
+    // Payment method breakdown for expenses
+    const paymentMethodData = useMemo(() => {
+        const expensePaymentMap = {};
+        filteredTransactions.filter(t => t.type === 'expense' && t.paymentType).forEach(t => {
+            expensePaymentMap[t.paymentType] = (expensePaymentMap[t.paymentType] || 0) + Math.abs(t.convertedAmount || t.amount);
+        });
+
+        return Object.keys(expensePaymentMap).map(ptId => {
+            const pt = paymentTypes.find(p => p.id === ptId) || { label: 'Other', color: '#64748B', icon: 'help-circle-outline' };
+            return {
+                id: ptId,
+                label: pt.label,
+                amount: expensePaymentMap[ptId],
+                color: pt.color,
+                icon: pt.icon,
+                percentage: totalExpense > 0 ? ((expensePaymentMap[ptId] / totalExpense) * 100).toFixed(1) : 0
+            };
+        }).sort((a, b) => b.amount - a.amount);
+    }, [filteredTransactions, totalExpense]);
+
+    // Income source breakdown
+    const incomeSourceData = useMemo(() => {
+        const incomePaymentMap = {};
+        filteredTransactions.filter(t => t.type === 'income' && t.paymentType).forEach(t => {
+            incomePaymentMap[t.paymentType] = (incomePaymentMap[t.paymentType] || 0) + (t.convertedAmount || t.amount);
+        });
+
+        return Object.keys(incomePaymentMap).map(ptId => {
+            const pt = paymentTypes.find(p => p.id === ptId) || { label: 'Other', color: '#64748B', icon: 'help-circle-outline' };
+            return {
+                id: ptId,
+                label: pt.label,
+                amount: incomePaymentMap[ptId],
+                color: pt.color,
+                icon: pt.icon,
+                percentage: totalIncome > 0 ? ((incomePaymentMap[ptId] / totalIncome) * 100).toFixed(1) : 0
+            };
+        }).sort((a, b) => b.amount - a.amount);
+    }, [filteredTransactions, totalIncome]);
 
     const handleSaveGoals = () => {
         saveSavingsGoals({
@@ -264,6 +305,56 @@ export default function AnalyticsScreen() {
                             />
                         </View>
                     </View>
+
+                    {/* Payment Method Breakdown */}
+                    {paymentMethodData.length > 0 && (
+                        <View style={styles.chartSection}>
+                            <Text style={styles.sectionTitle}>Payment Methods</Text>
+                            <View style={styles.paymentBreakdownCard}>
+                                {paymentMethodData.map((item, index) => (
+                                    <View key={item.id} style={styles.paymentItem}>
+                                        <View style={styles.paymentLeft}>
+                                            <View style={[styles.paymentIcon, { backgroundColor: `${item.color}15` }]}>
+                                                <Ionicons name={item.icon} size={20} color={item.color} />
+                                            </View>
+                                            <View>
+                                                <Text style={styles.paymentLabel}>{item.label}</Text>
+                                                <Text style={styles.paymentPercentage}>{item.percentage}% of expenses</Text>
+                                            </View>
+                                        </View>
+                                        <Text style={[styles.paymentAmount, { color: item.color }]}>
+                                            {homeCurrency.symbol}{item.amount.toLocaleString()}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Income Source Breakdown */}
+                    {incomeSourceData.length > 0 && (
+                        <View style={styles.chartSection}>
+                            <Text style={styles.sectionTitle}>Income Sources</Text>
+                            <View style={styles.paymentBreakdownCard}>
+                                {incomeSourceData.map((item, index) => (
+                                    <View key={item.id} style={styles.paymentItem}>
+                                        <View style={styles.paymentLeft}>
+                                            <View style={[styles.paymentIcon, { backgroundColor: `${item.color}15` }]}>
+                                                <Ionicons name={item.icon} size={20} color={item.color} />
+                                            </View>
+                                            <View>
+                                                <Text style={styles.paymentLabel}>{item.label}</Text>
+                                                <Text style={styles.paymentPercentage}>{item.percentage}% of income</Text>
+                                            </View>
+                                        </View>
+                                        <Text style={[styles.paymentAmount, { color: COLORS.success }]}>
+                                            {homeCurrency.symbol}{item.amount.toLocaleString()}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    )}
                 </ScrollView>
             </SafeAreaView>
 
@@ -639,5 +730,49 @@ const styles = StyleSheet.create({
         fontSize: SIZES.fontSm,
         color: COLORS.textSecondary,
         fontWeight: '600',
+    },
+    paymentBreakdownCard: {
+        backgroundColor: COLORS.white,
+        borderRadius: SIZES.radiusLg,
+        padding: SIZES.md,
+        shadowColor: COLORS.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    paymentItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: SIZES.md,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+    },
+    paymentLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SIZES.md,
+    },
+    paymentIcon: {
+        width: 44,
+        height: 44,
+        borderRadius: SIZES.radiusMd,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    paymentLabel: {
+        fontSize: SIZES.fontMd,
+        fontWeight: '600',
+        color: COLORS.textPrimary,
+    },
+    paymentPercentage: {
+        fontSize: SIZES.fontSm,
+        color: COLORS.textMuted,
+        marginTop: 2,
+    },
+    paymentAmount: {
+        fontSize: SIZES.fontLg,
+        fontWeight: '700',
     },
 });

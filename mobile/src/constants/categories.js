@@ -38,3 +38,16 @@ export const CURRENCIES = [
     { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit', flag: '🇲🇾' },
     { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar', flag: '🇳🇿' },
 ];
+
+// Payment types for expenses
+export const EXPENSE_PAYMENT_TYPES = [
+    { id: 'cash', label: 'Cash', icon: 'cash-outline', color: '#10B981' },
+    { id: 'card', label: 'Card', icon: 'card-outline', color: '#3B82F6' },
+    { id: 'upi', label: 'UPI', icon: 'phone-portrait-outline', color: '#8B5CF6', indiaOnly: true },
+];
+
+// Payment types for income
+export const INCOME_PAYMENT_TYPES = [
+    { id: 'cash', label: 'Cash', icon: 'cash-outline', color: '#10B981' },
+    { id: 'bank', label: 'Bank Account', icon: 'business-outline', color: '#3B82F6' },
+];

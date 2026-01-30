@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import { COLORS, SIZES } from '../../src/constants/colors';
 
 export default function TabLayout() {
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     tabBar: {
         backgroundColor: COLORS.white,
         borderTopWidth: 0,
-        height: 64,
-        paddingBottom: 8,
+        height: Platform.OS === 'ios' ? 84 : 64,
+        paddingBottom: Platform.OS === 'ios' ? 24 : 8,
         paddingTop: 8,
         borderTopLeftRadius: SIZES.radiusXl,
         borderTopRightRadius: SIZES.radiusXl,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        height: 64,
+        height: Platform.OS === 'ios' ? 84 : 64,
     },
     addButton: {
         width: 60,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primary,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: -32,
+        marginTop: Platform.OS === 'ios' ? -48 : -32,
         shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
@@ -124,3 +124,4 @@ const styles = StyleSheet.create({
         borderColor: COLORS.background,
     },
 });
+

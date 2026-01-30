@@ -29,7 +29,8 @@ export default function SettingsScreen() {
         transactions,
         exchangeRates,
         travelMode,
-        saveTravelMode
+        saveTravelMode,
+        clearAllData
     } = useApp();
 
     const [showHomePicker, setShowHomePicker] = useState(false);
@@ -45,9 +46,13 @@ export default function SettingsScreen() {
                 {
                     text: 'Clear All',
                     style: 'destructive',
-                    onPress: () => {
-                        // Would clear AsyncStorage here
-                        Alert.alert('Success', 'All data has been cleared');
+                    onPress: async () => {
+                        try {
+                            await clearAllData();
+                            Alert.alert('Success', 'All data has been cleared');
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to clear data. Please try again.');
+                        }
                     }
                 },
             ]
