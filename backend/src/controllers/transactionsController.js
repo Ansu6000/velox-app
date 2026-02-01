@@ -17,14 +17,14 @@ export async function getTransactionByUserId(req, res) {
 
 export async function createTransaction(req, res) {
   try {
-    const { user_id, title, amount, category, created_at } = req.body;
+    const { user_id, title, amount, category, payment_type, created_at } = req.body;
 
     if (!user_id || !title || amount === undefined || !category) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    const transaction = await sql`INSERT INTO transactions (user_id, title, amount, category, created_at) 
-    VALUES (${user_id}, ${title}, ${amount}, ${category}, ${created_at || new Date().toISOString()})
+    const transaction = await sql`INSERT INTO transactions (user_id, title, amount, category, payment_type, created_at) 
+    VALUES (${user_id}, ${title}, ${amount}, ${category}, ${payment_type || null}, ${created_at || new Date().toISOString()})
     RETURNING *
     `;
     console.log("New transaction created: ", transaction);
@@ -66,7 +66,7 @@ export async function updateTransaction(req, res) {
 
     const result = await sql`
       UPDATE transactions 
-      SET title = ${title}, amount = ${amount}, category = ${category}
+      SET title = ${title}, amount = ${amount}, category = ${category}, payment_type = ${payment_type || null}
       WHERE id = ${id}
       RETURNING *
     `;

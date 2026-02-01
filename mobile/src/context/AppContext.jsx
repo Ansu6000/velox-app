@@ -53,7 +53,8 @@ export function AppProvider({ children }) {
                     amount: parseFloat(t.amount),
                     convertedAmount: parseFloat(t.amount), // Backend should ideally handle conversion or app does it on top
                     createdAt: t.created_at || t.createdAt,
-                    type: parseFloat(t.amount) >= 0 ? 'income' : 'expense'
+                    type: parseFloat(t.amount) >= 0 ? 'income' : 'expense',
+                    paymentType: t.payment_type || null,
                 }));
                 setTransactions(formattedData);
                 await AsyncStorage.setItem('transactions', JSON.stringify(formattedData));
