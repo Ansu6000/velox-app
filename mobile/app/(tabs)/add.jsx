@@ -7,7 +7,6 @@ import {
     Pressable,
     ScrollView,
     StatusBar,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     Modal,
@@ -25,6 +24,7 @@ import {
     INCOME_PAYMENT_TYPES
 } from '../../src/constants/categories';
 import { useApp } from '../../src/context/AppContext';
+import { showSimpleAlert } from '../../src/utils/alert';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -80,19 +80,19 @@ export default function AddTransactionScreen() {
 
     const handleSubmit = async () => {
         if (!title.trim()) {
-            Alert.alert('Error', 'Please enter a title');
+            showSimpleAlert('Error', 'Please enter a title');
             return;
         }
         if (!amount || parseFloat(amount) <= 0) {
-            Alert.alert('Error', 'Please enter a valid amount');
+            showSimpleAlert('Error', 'Please enter a valid amount');
             return;
         }
         if (!category) {
-            Alert.alert('Error', 'Please select a category');
+            showSimpleAlert('Error', 'Please select a category');
             return;
         }
         if (!paymentType) {
-            Alert.alert('Error', `Please select ${type === 'expense' ? 'a payment type' : 'how the amount was credited'}`);
+            showSimpleAlert('Error', `Please select ${type === 'expense' ? 'a payment type' : 'how the amount was credited'}`);
             return;
         }
 
@@ -113,11 +113,9 @@ export default function AddTransactionScreen() {
             setPaymentType(null);
             setDate(new Date());
 
-            Alert.alert('Success', 'Transaction added successfully', [
-                { text: 'OK', onPress: () => router.push('/') }
-            ]);
+            showSimpleAlert('Success', 'Transaction added successfully', () => router.push('/'));
         } catch (error) {
-            Alert.alert('Error', 'Failed to add transaction');
+            showSimpleAlert('Error', 'Failed to add transaction');
         } finally {
             setIsSubmitting(false);
         }

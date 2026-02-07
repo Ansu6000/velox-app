@@ -6,7 +6,6 @@ import {
     ScrollView,
     Pressable,
     StatusBar,
-    Alert,
     Switch
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +16,7 @@ import { CURRENCIES } from '../../src/constants/categories';
 import { useApp } from '../../src/context/AppContext';
 import { useAuth } from '../../src/context/AuthContext';
 import CurrencyPicker from '../../src/components/CurrencyPicker';
+import { showAlert, showSimpleAlert } from '../../src/utils/alert';
 
 export default function SettingsScreen() {
     const { logout } = useAuth();
@@ -38,7 +38,7 @@ export default function SettingsScreen() {
     const [notifications, setNotifications] = useState(true);
 
     const handleClearData = () => {
-        Alert.alert(
+        showAlert(
             'Clear All Data',
             'This will delete all your transactions. This action cannot be undone.',
             [
@@ -49,9 +49,9 @@ export default function SettingsScreen() {
                     onPress: async () => {
                         try {
                             await clearAllData();
-                            Alert.alert('Success', 'All data has been cleared');
+                            showSimpleAlert('Success', 'All data has been cleared');
                         } catch (error) {
-                            Alert.alert('Error', 'Failed to clear data. Please try again.');
+                            showSimpleAlert('Error', 'Failed to clear data. Please try again.');
                         }
                     }
                 },
@@ -196,7 +196,7 @@ export default function SettingsScreen() {
                                 title="Sign Out"
                                 subtitle="Log out of your account"
                                 onPress={() => {
-                                    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+                                    showAlert('Sign Out', 'Are you sure you want to sign out?', [
                                         { text: 'Cancel', style: 'cancel' },
                                         { text: 'Log Out', onPress: logout, style: 'destructive' }
                                     ]);

@@ -8,7 +8,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     StatusBar,
-    Alert,
     ScrollView,
     Image
 } from 'react-native';
@@ -20,6 +19,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useApp } from '../../src/context/AppContext';
 import { CURRENCIES } from '../../src/constants/categories';
 import CurrencyPicker from '../../src/components/CurrencyPicker';
+import { showSimpleAlert } from '../../src/utils/alert';
 
 export default function SignUpScreen() {
     const [name, setName] = useState('');
@@ -35,11 +35,11 @@ export default function SignUpScreen() {
 
     const handleSignUp = async () => {
         if (!name || !email || !password || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all fields');
+            showSimpleAlert('Error', 'Please fill in all fields');
             return;
         }
         if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
+            showSimpleAlert('Error', 'Passwords do not match');
             return;
         }
         try {
@@ -47,7 +47,7 @@ export default function SignUpScreen() {
             await saveHomeCurrency(homeCurrency);
             router.replace('/(tabs)');
         } catch (error) {
-            Alert.alert('Sign Up Failed', error.message);
+            showSimpleAlert('Sign Up Failed', error.message);
         }
     };
 

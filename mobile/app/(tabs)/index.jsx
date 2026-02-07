@@ -7,7 +7,6 @@ import {
     RefreshControl,
     StatusBar,
     Pressable,
-    Alert,
     Image,
     Modal,
     TextInput,
@@ -25,6 +24,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, EXPENSE_PAYMENT_TYPES, INCOME_PAYMENT_TYPES } from '../../src/constants/categories';
 import BalanceCard from '../../src/components/BalanceCard';
 import TransactionItem from '../../src/components/TransactionItem';
+import { showAlert, showSimpleAlert } from '../../src/utils/alert';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -51,7 +51,7 @@ export default function HomeScreen() {
     };
 
     const handleDelete = (id) => {
-        Alert.alert(
+        showAlert(
             'Delete Transaction',
             'Are you sure you want to delete this transaction?',
             [
@@ -80,11 +80,11 @@ export default function HomeScreen() {
 
     const handleSaveEdit = async () => {
         if (!editTitle.trim()) {
-            Alert.alert('Error', 'Please enter a title');
+            showSimpleAlert('Error', 'Please enter a title');
             return;
         }
         if (!editAmount || parseFloat(editAmount) <= 0) {
-            Alert.alert('Error', 'Please enter a valid amount');
+            showSimpleAlert('Error', 'Please enter a valid amount');
             return;
         }
 
@@ -100,9 +100,9 @@ export default function HomeScreen() {
             await updateTransaction(updatedTransaction);
             setEditModalVisible(false);
             setEditingTransaction(null);
-            Alert.alert('Success', 'Transaction updated successfully');
+            showSimpleAlert('Success', 'Transaction updated successfully');
         } catch (error) {
-            Alert.alert('Error', 'Failed to update transaction');
+            showSimpleAlert('Error', 'Failed to update transaction');
         }
     };
 

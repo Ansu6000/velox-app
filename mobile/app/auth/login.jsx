@@ -8,7 +8,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     StatusBar,
-    Alert,
     Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +15,7 @@ import { useRouter, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../../src/constants/colors';
 import { useAuth } from '../../src/context/AuthContext';
+import { showSimpleAlert } from '../../src/utils/alert';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -26,14 +26,14 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
+            showSimpleAlert('Error', 'Please fill in all fields');
             return;
         }
         try {
             await login(email, password);
             router.replace('/(tabs)');
         } catch (error) {
-            Alert.alert('Login Failed', error.message);
+            showSimpleAlert('Login Failed', error.message);
         }
     };
 
